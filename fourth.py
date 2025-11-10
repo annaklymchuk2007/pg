@@ -1,5 +1,4 @@
 def je_tah_mozny(figurka, cilova_pozice, obsazene_pozice):
-
     """
     Ověří, zda se figurka může přesunout na danou pozici.
 
@@ -9,61 +8,136 @@ def je_tah_mozny(figurka, cilova_pozice, obsazene_pozice):
     
     :return: True, pokud je tah možný, jinak False.
     """
-    # Implementace pravidel pohybu pro různé figury zde.
-    typ = figurka["typ"]
-    pozice = figurka["pozice"]
-    r1, s1 = pozice
-    r2, s2 = cilova_pozice
-   
-
-    if not (1 <= r2 <= 8 and 1 <= s2 <= 8):
+    
+    typ_figurky = figurka["typ"]
+    aktualni_pozice = figurka["pozice"]
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    if (cilovy_radek < 1 or cilovy_radek > 8 or 
+        cilovy_sloupec < 1 or cilovy_sloupec > 8):
+        return False
+    
+    if cilova_pozice in obsazene_pozice:
+        return False
+    
+    if typ_figurky == "pěšec":
+        return _je_tah_mozny_pesec(aktualni_pozice, cilova_pozice, obsazene_pozice)
+    
+    elif typ_figurky == "jezdec":
+        return _je_tah_mozny_jezdec(aktualni_pozice, cilova_pozice)
+    
+    elif typ_figurky == "věž":
+        return _je_tah_mozny_vez(aktualni_pozice, cilova_pozice, obsazene_pozice)
+    
+    elif typ_figurky == "střelec":
+        return _je_tah_mozny_strelec(aktualni_pozice, cilova_pozice, obsazene_pozice)
+    
+    elif typ_figurky == "dáma":
+        return _je_tah_mozny_dama(aktualni_pozice, cilova_pozice, obsazene_pozice)
+    
+    elif typ_figurky == "král":
+        return _je_tah_mozny_kral(aktualni_pozice, cilova_pozice)
+    
+    else:
         return False
 
-    if (r2, s2) in obsazene_pozice:
+
+def _je_tah_mozny_pesec(aktualni_pozice, cilova_pozice, obsazene_pozice):
+    """
+    Ověří, zda může pěšec provést daný tah.
+    """
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    if cilovy_sloupec != aktualni_sloupec:
         return False
-
-    dr, ds = abs(r2-r1), abs(s2-s1)
-
-    if typ == "pěšec":
-        return s1 == s2 and (r2-r1 == 1 or (r1 == 2 and r2 == 4 and (3, s1) not in obsazene_pozice))
-    elif typ == "jezdec":
-        return (dr == 2 and ds == 1) or (dr == 1 and ds == 2)
-    elif typ == "věž":
-        return (r1 == r2 or s1 == s2) and volna_cesta(pozice, cilova_pozice, obsazene_pozice)
-    elif typ == "střelec":
-        return dr == ds and volna_cesta(pozice, cilova_pozice, obsazene_pozice)
-    elif typ == "dáma":
-        return (r1 == r2 or s1 == s2 or ds == dr) and volna_cesta(pozice, cilova_pozice, obsazene_pozice)
-    elif typ == "král":
-        return dr <= 1 and ds <= 1 and (dr != 0 or ds != 0)
+    
+    rozdil_radku = cilovy_radek - aktualni_radek
+    
+    if rozdil_radku == 1:
+        return cilova_pozice not in obsazene_pozice
+    
+    if rozdil_radku == 2 and aktualni_radek == 2:
+        mezilehla_pozice = (aktualni_radek + 1, aktualni_sloupec)
+        if mezilehla_pozice not in obsazene_pozice:
+            return True
+    
     return False
 
-def volna_cesta(od, do, obsazene):
-    r1, s1 = od 
-    r2, s2 = do 
 
-    if r1 == r2:
-        krok_r = 0
-    elif r2 > r1:
-        krok_r = 1
+def _je_tah_mozny_jezdec(aktualni_pozice, cilova_pozice): 
+
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    rozdil_radku = abs(cilovy_radek - aktualni_radek)
+    rozdil_sloupcu = abs(cilovy_sloupec - aktualni_sloupec)
+    
+    return (rozdil_radku == 2 and rozdil_sloupcu == 1) or (rozdil_radku == 1 and rozdil_sloupcu == 2)
+
+
+def _je_tah_mozny_vez(aktualni_pozice, cilova_pozice, obsazene_pozice):
+
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    if aktualni_radek != cilovy_radek and aktualni_sloupec != cilovy_sloupec:
+        return False
+    
+    if aktualni_radek == cilovy_radek:
+        start = min(aktualni_sloupec, cilovy_sloupec) + 1
+        end = max(aktualni_sloupec, cilovy_sloupec)
+        for sloupec in range(start, end):
+            if (aktualni_radek, sloupec) in obsazene_pozice:
+                return False
     else:
-        krok_r = -1
+        start = min(aktualni_radek, cilovy_radek) + 1
+        end = max(aktualni_radek, cilovy_radek)
+        for radek in range(start, end):
+            if (radek, aktualni_sloupec) in obsazene_pozice:
+                return False
+    
+    return True
 
-    if s1 == s2:
-        krok_s = 0
-    elif s2 > s1:
-        krok_s = 1
-    else:
-        krok_s = -1
 
-    r, s = r1 + krok_r, s1 + krok_s
+def _je_tah_mozny_strelec(aktualni_pozice, cilova_pozice, obsazene_pozice):
 
-    while (r, s) != (r2, s2):
-        if (r, s) != (r2, s2):
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    if abs(cilovy_radek - aktualni_radek) != abs(cilovy_sloupec - aktualni_sloupec):
+        return False
+    
+    krok_radek = 1 if cilovy_radek > aktualni_radek else -1
+    krok_sloupec = 1 if cilovy_sloupec > aktualni_sloupec else -1
+    
+    vzdalenost = abs(cilovy_radek - aktualni_radek)
+    for i in range(1, vzdalenost):
+        radek = aktualni_radek + i * krok_radek
+        sloupec = aktualni_sloupec + i * krok_sloupec
+        if (radek, sloupec) in obsazene_pozice:
             return False
-        r += krok_r
-        s += krok_s
-        return True
+    
+    return True
+
+
+def _je_tah_mozny_dama(aktualni_pozice, cilova_pozice, obsazene_pozice):
+
+    return (_je_tah_mozny_vez(aktualni_pozice, cilova_pozice, obsazene_pozice) or
+            _je_tah_mozny_strelec(aktualni_pozice, cilova_pozice, obsazene_pozice))
+
+
+def _je_tah_mozny_kral(aktualni_pozice, cilova_pozice):
+
+    aktualni_radek, aktualni_sloupec = aktualni_pozice
+    cilovy_radek, cilovy_sloupec = cilova_pozice
+    
+    rozdil_radku = abs(cilovy_radek - aktualni_radek)
+    rozdil_sloupcu = abs(cilovy_sloupec - aktualni_sloupec)
+    
+    return rozdil_radku <= 1 and rozdil_sloupcu <= 1 and (rozdil_radku != 0 or rozdil_sloupcu != 0)
+
 
 if __name__ == "__main__":
     pesec = {"typ": "pěšec", "pozice": (2, 2)}
