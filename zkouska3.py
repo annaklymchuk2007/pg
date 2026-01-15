@@ -12,7 +12,6 @@ class Zamestnanec(ABC):
 
     @abstractmethod
     def vypocitej_mzdu(self):
-        # Zakladni mzda + 1000 Kc za kazdy odpracovany rok
         bonus = 1000 * self.pocet_odpracovanych_let
         return self.zakladni_mzda + bonus
 
@@ -24,7 +23,6 @@ class Zamestnanec(ABC):
 # Programator dostava 10% navíc proti mzdě vypočítané metodou vypocitej_mzdu ve tride Zamestnanec
 class Programator(Zamestnanec):
     def vypocitej_mzdu(self):
-        # základní mzda podle Zamestnanec + 10 %
         zaklad = super().vypocitej_mzdu()
         return int(zaklad * 1.10)
 
@@ -39,7 +37,6 @@ class Manazer(Zamestnanec):
         self.pocet_podrizenych = pocet_podrizenych
 
     def vypocitej_mzdu(self):
-        # základní mzda podle Zamestnanec + 1000 Kč za každého podřízeného
         zaklad = super().vypocitej_mzdu()
         return zaklad + 1000 * self.pocet_podrizenych
 
